@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Package, ShoppingBag, Sparkles, User } from "lucide-react";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
@@ -18,9 +19,14 @@ export function Header() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-            The Furniture Store
-          </span>
+          <Image
+            src="/sound-signal-instruments.svg"
+            alt="Sound Signal Instruments"
+            width={180}      // adjust to taste
+            height={40}
+            priority
+            className="h-8 w-auto"
+          />
         </Link>
 
         {/* Actions */}

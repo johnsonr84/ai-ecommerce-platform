@@ -6,7 +6,7 @@ interface ShoppingAgentOptions {
   userId: string | null;
 }
 
-const baseInstructions = `You are a friendly shopping assistant for a premium furniture store.
+const baseInstructions = `You are a friendly shopping assistant for premium instruments and gear.
 
 ## searchProducts Tool Usage
 
