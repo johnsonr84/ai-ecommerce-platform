@@ -16,8 +16,8 @@ The searchProducts tool accepts these parameters:
 |-----------|------|-------------|
 | query | string | Text search for product name/description (e.g., "dining table", "sofa") |
 | category | string | Category slug: "", "sofas", "tables", "chairs", "storage" |
-| material | enum | "", "wood", "metal", "fabric", "leather", "glass" |
-| color | enum | "", "black", "white", "oak", "walnut", "grey", "natural" |
+| material | enum | "", "wood", "metal", "fabric", "leather", "glass", "acrylic", "plastic", "misc" |
+| color | enum | "", "black", "white", "red", "clear", "metallic", "oak", "walnut", "grey", "natural", "misc" |
 | minPrice | number | Minimum price in USD (0 = no minimum) |
 | maxPrice | number | Maximum price in USD (0 = no maximum) |
 

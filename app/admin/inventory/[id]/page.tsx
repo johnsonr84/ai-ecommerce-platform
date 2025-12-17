@@ -33,16 +33,24 @@ const MATERIALS = [
   { value: "metal", label: "Metal" },
   { value: "fabric", label: "Fabric" },
   { value: "leather", label: "Leather" },
+  { value: "acrylic", label: "Acrylic" },
+  { value: "misc", label: "Misc" },
+  { value: "plastic", label: "Plastic" },
   { value: "glass", label: "Glass" },
 ];
 
 const COLORS = [
   { value: "black", label: "Black" },
   { value: "white", label: "White" },
+  { value: "red", label: "Red" },
+  { value: "clear", label: "Clear" },
   { value: "oak", label: "Oak" },
   { value: "walnut", label: "Walnut" },
+  { value: "maple", label: "Maple" },
+  { value: "metallic", label: "Metallic" },
   { value: "grey", label: "Grey" },
   { value: "natural", label: "Natural" },
+  { value: "misc", label: "Misc" },
 ];
 
 // Field editor components
