@@ -368,6 +368,10 @@
             },
             {
               "type": "string",
+              "value": "acrylic"
+            },
+            {
+              "type": "string",
               "value": "glass"
             }
           ]
@@ -389,6 +393,26 @@
             },
             {
               "type": "string",
+              "value": "red"
+            },
+            {
+              "type": "string",
+              "value": "misc"
+            },
+            {
+              "type": "string",
+              "value": "maple"
+            },
+            {
+              "type": "string",
+              "value": "clear"
+            },
+            {
+              "type": "string",
+              "value": "metallic"
+            },
+            {
+              "type": "string",
               "value": "oak"
             },
             {
@@ -398,6 +422,10 @@
             {
               "type": "string",
               "value": "grey"
+            },
+            {
+              "type": "string",
+              "value": "misc"
             },
             {
               "type": "string",
