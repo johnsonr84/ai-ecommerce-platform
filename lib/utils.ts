@@ -60,8 +60,16 @@ export function formatDate(
  * @returns Shortened order number (e.g., "ABC123") or "N/A" if null
  */
 export function formatOrderNumber(
-  orderNumber: string | null | undefined
+  orderNumber?: string | number | null
 ): string {
-  if (!orderNumber) return "N/A";
-  return orderNumber.split("-").pop() ?? orderNumber;
+  if (orderNumber == null) return "N/A";
+
+  const normalized = String(orderNumber);
+
+  // If it contains hyphens, show last segment
+  if (normalized.includes("-")) {
+    return normalized.split("-").pop() ?? normalized;
+  }
+
+  return normalized;
 }
