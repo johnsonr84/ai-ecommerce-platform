@@ -14,13 +14,26 @@ export const metadata = {
   description: "View your order history",
 };
 
+type OrderListItem = {
+  _id: string;
+  orderNumber: string | number;
+  status: string;
+  createdAt: string;
+  total: number;
+  itemCount?: number | null;
+  itemNames?: Array<string | null> | null;
+  itemImages?: Array<string | null> | null;
+};
+
 export default async function OrdersPage() {
   const { userId } = await auth();
 
-  const { data: orders } = await sanityFetch({
+  const { data } = await sanityFetch({
     query: ORDERS_BY_USER_QUERY,
     params: { clerkUserId: userId ?? "" },
   });
+
+  const orders = (data ?? []) as OrderListItem[];
 
   if (orders.length === 0) {
     return (
@@ -48,9 +61,10 @@ export default async function OrdersPage() {
       </div>
 
       <div className="space-y-4">
-        {orders.map((order) => {
+        {orders.map((order: OrderListItem) => {
           const status = getOrderStatus(order.status);
           const StatusIcon = status.icon;
+
           const images = (order.itemImages ?? []).filter(
             (url): url is string => url !== null,
           );
@@ -81,6 +95,7 @@ export default async function OrdersPage() {
                         {formatDate(order.createdAt)}
                       </p>
                     </div>
+
                     <Badge
                       className={`${status.color} shrink-0 flex items-center gap-1`}
                     >
@@ -92,8 +107,8 @@ export default async function OrdersPage() {
                   {/* Bottom: Items + Total */}
                   <div className="mt-2 flex items-end justify-between">
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                      {order.itemCount}{" "}
-                      {order.itemCount === 1 ? "item" : "items"}
+                      {order.itemCount ?? 0}{" "}
+                      {(order.itemCount ?? 0) === 1 ? "item" : "items"}
                     </p>
                     <p className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
                       {formatPrice(order.total)}
@@ -108,6 +123,7 @@ export default async function OrdersPage() {
                   {order.itemNames?.slice(0, 2).filter(Boolean).join(", ")}
                   {(order.itemNames?.length ?? 0) > 2 && "..."}
                 </p>
+
                 <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-zinc-500 transition-colors group-hover:text-zinc-900 dark:text-zinc-400 dark:group-hover:text-zinc-100">
                   View order
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />

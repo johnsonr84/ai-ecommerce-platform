@@ -18,14 +18,81 @@ interface OrderPageProps {
   params: Promise<{ id: string }>;
 }
 
+type OrderItemProduct = {
+  name?: string | null;
+  slug?: string | null;
+  // Your existing query may return `image.asset.url` (old format)
+  image?: {
+    asset?: {
+      url?: string | null;
+    } | null;
+  } | null;
+
+  // New local public path (e.g. "/sound-signal-media/...")
+  imageUrl?: string | null;
+
+  // Optional: if you ever return images[] instead
+  images?: Array<{
+    asset?: { url?: string | null } | null;
+  }> | null;
+};
+
+type OrderItem = {
+  _key: string;
+  quantity?: number | null;
+  priceAtPurchase?: number | null;
+  product?: OrderItemProduct | null;
+};
+
+type OrderAddress = {
+  name?: string | null;
+  line1?: string | null;
+  line2?: string | null;
+  city?: string | null;
+  postcode?: string | null;
+  country?: string | null;
+};
+
+type Order = {
+  _id: string;
+  clerkUserId: string;
+  orderNumber?: string | number | null;
+  createdAt: string;
+  status: string;
+  total: number;
+  email?: string | null;
+  items?: OrderItem[] | null;
+  address?: OrderAddress | null;
+};
+
+function getBestProductImageUrl(product?: OrderItemProduct | null): string | null {
+  if (!product) return null;
+
+  // Prefer Sanity asset URL if present (your existing page expects this)
+  const assetUrl = product.image?.asset?.url ?? null;
+  if (assetUrl) return assetUrl;
+
+  // If you later return images[] from GROQ
+  const firstFromImages = product.images?.[0]?.asset?.url ?? null;
+  if (firstFromImages) return firstFromImages;
+
+  // Fallback to local public path field used in your new seed
+  const localUrl = product.imageUrl ?? null;
+  if (localUrl) return localUrl;
+
+  return null;
+}
+
 export default async function OrderDetailPage({ params }: OrderPageProps) {
   const { id } = await params;
   const { userId } = await auth();
 
-  const { data: order } = await sanityFetch({
+  const { data } = await sanityFetch({
     query: ORDER_BY_ID_QUERY,
     params: { id },
   });
+
+  const order = data as Order | null;
 
   // Verify order exists and belongs to current user
   if (!order || order.clerkUserId !== userId) {
@@ -46,15 +113,17 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Orders
         </Link>
+
         <div className="mt-4 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-              Order {order.orderNumber}
+              Order {order.orderNumber ?? id}
             </h1>
             <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
               Placed on {formatDate(order.createdAt, "datetime")}
             </p>
           </div>
+
           <Badge className={`${status.color} flex items-center gap-1.5`}>
             <StatusIcon className="h-4 w-4" />
             {status.label}
@@ -71,56 +140,63 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
                 Items ({order.items?.length ?? 0})
               </h2>
             </div>
-            <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
-              {order.items?.map((item) => (
-                <div key={item._key} className="flex gap-4 px-6 py-4">
-                  {/* Image */}
-                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-800">
-                    {item.product?.image?.asset?.url ? (
-                      <Image
-                        src={item.product.image.asset.url}
-                        alt={item.product.name ?? "Product"}
-                        fill
-                        className="object-cover"
-                        sizes="80px"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-xs text-zinc-400">
-                        No image
-                      </div>
-                    )}
-                  </div>
 
-                  {/* Details */}
-                  <div className="flex flex-1 flex-col justify-between">
-                    <div>
-                      <Link
-                        href={`/products/${item.product?.slug}`}
-                        className="font-medium text-zinc-900 hover:text-zinc-600 dark:text-zinc-100 dark:hover:text-zinc-300"
-                      >
-                        {item.product?.name ?? "Unknown Product"}
-                      </Link>
-                      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                        Qty: {item.quantity}
+            <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
+              {order.items?.map((item: OrderItem) => {
+                const product = item.product ?? null;
+                const imageSrc = getBestProductImageUrl(product);
+
+                const quantity = item.quantity ?? 1;
+                const priceAtPurchase = item.priceAtPurchase ?? 0;
+
+                return (
+                  <div key={item._key} className="flex gap-4 px-6 py-4">
+                    {/* Image */}
+                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-800">
+                      {imageSrc ? (
+                        <Image
+                          src={imageSrc}
+                          alt={product?.name ?? "Product"}
+                          fill
+                          className="object-cover"
+                          sizes="80px"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-xs text-zinc-400">
+                          No image
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Details */}
+                    <div className="flex flex-1 flex-col justify-between">
+                      <div>
+                        <Link
+                          href={`/products/${product?.slug ?? ""}`}
+                          className="font-medium text-zinc-900 hover:text-zinc-600 dark:text-zinc-100 dark:hover:text-zinc-300"
+                        >
+                          {product?.name ?? "Unknown Product"}
+                        </Link>
+                        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                          Qty: {quantity}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Price */}
+                    <div className="text-right">
+                      <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                        {formatPrice(priceAtPurchase * quantity)}
                       </p>
+                      {quantity > 1 && (
+                        <p className="text-sm text-zinc-500">
+                          {formatPrice(priceAtPurchase)} each
+                        </p>
+                      )}
                     </div>
                   </div>
-
-                  {/* Price */}
-                  <div className="text-right">
-                    <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {formatPrice(
-                        (item.priceAtPurchase ?? 0) * (item.quantity ?? 1),
-                      )}
-                    </p>
-                    {(item.quantity ?? 1) > 1 && (
-                      <p className="text-sm text-zinc-500">
-                        {formatPrice(item.priceAtPurchase)} each
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -132,6 +208,7 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
             <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">
               Order Summary
             </h2>
+
             <div className="mt-4 space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-zinc-500 dark:text-zinc-400">
@@ -141,11 +218,10 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
                   {formatPrice(order.total)}
                 </span>
               </div>
+
               <div className="border-t border-zinc-200 pt-3 dark:border-zinc-800">
                 <div className="flex justify-between font-semibold">
-                  <span className="text-zinc-900 dark:text-zinc-100">
-                    Total
-                  </span>
+                  <span className="text-zinc-900 dark:text-zinc-100">Total</span>
                   <span className="text-zinc-900 dark:text-zinc-100">
                     {formatPrice(order.total)}
                   </span>
@@ -163,6 +239,7 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
                   Shipping Address
                 </h2>
               </div>
+
               <div className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
                 {order.address.name && <p>{order.address.name}</p>}
                 {order.address.line1 && <p>{order.address.line1}</p>}
@@ -185,6 +262,7 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
                 Payment
               </h2>
             </div>
+
             <div className="mt-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-light tracking-wide">Status</span>
@@ -192,6 +270,7 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
                   {order.status}
                 </span>
               </div>
+
               {order.email && (
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-light tracking-wide">Email</p>
