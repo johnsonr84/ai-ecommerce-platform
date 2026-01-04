@@ -139,7 +139,7 @@ Think of it as **an instrument store with an AI sales associate**.
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/sonnysangha/ai-ecommerce-sanity-clerk.git
+git clone https://github.com/johnsonr84/ai-ecommerce-platform.git
 cd ai-ecommerce-sanity-clerk
 ```
 
